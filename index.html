@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f9f9f9; margin: 0; }
+        .container { display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 320px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #cc0000; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        
+        /* Dashboard Styles */
+        #dashboard { padding: 20px; display: none; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .video-card { background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .thumbnail { width: 100%; height: 140px; background: #ddd; border-radius: 4px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="loginView" class="container">
+        <div class="card">
+            <h2>Sign In</h2>
+            <input type="text" id="user" placeholder="Username">
+            <input type="password" id="pass" placeholder="Password">
+            <button onclick="login()">Log In</button>
+        </div>
+    </div>
+
+    <div id="dashboard">
+        <h1>Recommended</h1>
+        <div class="video-grid" id="videoGrid"></div>
+        <button onclick="logout()" style="width: 100px; margin-top: 20px;">Logout</button>
+    </div>
+</div>
+
+<script>
+    // 1. Check for existing session
+    if (localStorage.getItem('isLoggedIn') === 'true') showDashboard();
+
+    function login() {
+        // Simple mock validation
+        if (document.getElementById('user').value !== "") {
+            localStorage.setItem('isLoggedIn', 'true');
+            showDashboard();
+        } else {
+            alert("Please enter a username");
+        }
+    }
+
+    function showDashboard() {
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        
+        // Generate mock videos
+        const grid = document.getElementById('videoGrid');
+        for(let i=0; i<6; i++) {
+            grid.innerHTML += `<div class="video-card"><div class="thumbnail"></div><h4>Video Title ${i+1}</h4></div>`;
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('isLoggedIn');
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
