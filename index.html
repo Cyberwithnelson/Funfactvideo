@@ -2,77 +2,104 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberSecurity Sandbox v1.0</title>
+    <title>PHANTOM_CORE // SEC-OPS</title>
     <style>
         :root {
-            --neon-green: #00ff41;
-            --bg-black: #0d0d0d;
+            --glow: #00f2ff; /* Cyan-hacker blue */
+            --bg: #05080a;
+            --scanline: rgba(255, 255, 255, 0.03);
         }
+
         body {
-            background-color: var(--bg-black);
-            color: var(--neon-green);
+            background-color: var(--bg);
+            color: var(--glow);
             font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            overflow: hidden;
             display: flex;
             justify-content: center;
-            padding: 20px;
+            align-items: center;
+            height: 100vh;
         }
-        .container {
-            width: 800px;
-            border: 1px solid var(--neon-green);
-            padding: 20px;
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+
+        /* CRT Scanline Effect */
+        body::before {
+            content: " ";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(var(--scanline) 50%, transparent 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 10;
         }
-        h1 { text-transform: uppercase; border-bottom: 1px solid var(--neon-green); padding-bottom: 10px; }
-        .terminal-output { height: 300px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #333; padding: 10px; }
-        .input-area { display: flex; gap: 10px; }
-        input { background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); flex-grow: 1; padding: 5px; }
-        button { background: var(--neon-green); color: black; border: none; cursor: pointer; font-weight: bold; padding: 5px 15px; }
-        button:hover { background: #00cc33; }
-        .alert { color: #ff3333; font-weight: bold; animation: blink 1s infinite; }
+
+        .terminal-window {
+            width: 80%;
+            height: 70%;
+            background: rgba(0, 20, 20, 0.8);
+            border: 1px solid var(--glow);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+            padding: 20px;
+            position: relative;
+        }
+
+        h1 { font-size: 1.2rem; margin: 0 0 10px 0; border-bottom: 1px solid var(--glow); }
+
+        #output { height: 85%; overflow-y: auto; margin-bottom: 10px; }
+
+        input {
+            width: 90%;
+            background: transparent;
+            border: none;
+            color: var(--glow);
+            font-size: 1rem;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .alert-pulse {
+            color: #ff0055;
+            text-shadow: 0 0 8px #ff0055;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
+        
+        .cursor { display: inline-block; width: 10px; height: 18px; background: var(--glow); animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>[ CYBER-SEC SANDBOX ]</h1>
-    <div id="terminal" class="terminal-output">
-        <p>> System Initialized...</p>
-        <p>> Awaiting Command. Type 'scan' or 'verify'.</p>
-    </div>
-    
-    <div class="input-area">
-        <input type="text" id="cmd" placeholder="Enter command..." autofocus>
-        <button onclick="processCommand()">EXECUTE</button>
+<div class="terminal-window">
+    <h1>[//] PHANTOM_CORE_OPERATIONAL_SANDBOX</h1>
+    <div id="output"></div>
+    <div style="display:flex">
+        <span>&gt;&nbsp;</span>
+        <input type="text" id="input" autofocus>
+        <span class="cursor"></span>
     </div>
 </div>
 
 <script>
-    const terminal = document.getElementById('terminal');
-    const cmdInput = document.getElementById('cmd');
+    const output = document.getElementById('output');
+    const input = document.getElementById('input');
 
-    function processCommand() {
-        const cmd = cmdInput.value.toLowerCase();
-        const line = document.createElement('p');
-        line.innerHTML = `> ${cmd}`;
-        terminal.appendChild(line);
-
-        if (cmd === 'scan') {
-            const res = document.createElement('p');
-            res.innerHTML = ">> Scanning network... Vulnerability found in PORT 8080 (SQL Injection).";
-            terminal.appendChild(res);
-        } else if (cmd === 'verify') {
-            const alert = document.createElement('p');
-            alert.className = 'alert';
-            alert.innerHTML = "!! SECURITY ALERT: UNAUTHORIZED ACCESS DETECTED IN LOGS !!";
-            terminal.appendChild(alert);
-        } else {
-            terminal.innerHTML += "<p>> Unknown Command.</p>";
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const val = input.value.trim();
+            output.innerHTML += `<div>> ${val}</div>`;
+            
+            if(val === 'alert') {
+                output.innerHTML += `<div class="alert-pulse">> [!] CRITICAL SECURITY BREACH: UNAUTHORIZED PACKET INJECTION DETECTED</div>`;
+            } else {
+                output.innerHTML += `<div>> Processing Request... [SUCCESS]</div>`;
+            }
+            
+            input.value = '';
+            output.scrollTop = output.scrollHeight;
         }
-        cmdInput.value = '';
-        terminal.scrollTop = terminal.scrollHeight;
-    }
+    });
 </script>
 </body>
 </html>
