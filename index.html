@@ -1,55 +1,77 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Sentinel | Advanced Security Lab</title>
+    <title>CyberSecurity Sandbox v1.0</title>
     <style>
-        :root { --neon: #00f3ff; --danger: #ff0055; --bg: #09090b; }
-        body { background: var(--bg); color: var(--neon); font-family: 'Orbitron', sans-serif; margin: 0; padding: 15px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        .glitch { position: relative; text-shadow: 0.05em 0 0 var(--danger), -0.05em -0.025em 0 var(--neon); animation: glitch 725ms infinite; }
-        @keyframes glitch { 0% { text-shadow: 0.05em 0 0 var(--danger), -0.05em -0.025em 0 var(--neon); } 14% { text-shadow: 0.05em 0 0 var(--danger), -0.05em -0.025em 0 var(--neon); } 15% { text-shadow: -0.05em -0.025em 0 var(--danger), 0.025em 0.025em 0 var(--neon); } 100% { text-shadow: -0.05em -0.025em 0 var(--danger), 0.025em 0.025em 0 var(--neon); } }
-
-        #terminal { flex-grow: 1; border: 1px solid #333; padding: 15px; background: rgba(0,0,0,0.8); overflow-y: auto; font-size: 0.85rem; border-radius: 4px; }
-        .module-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        button { background: transparent; border: 1px solid var(--neon); color: var(--neon); padding: 10px; cursor: pointer; transition: 0.3s; }
-        button:hover { background: var(--neon); color: black; }
-        .input-line { display: flex; margin-top: 10px; }
-        input { flex-grow: 1; background: transparent; border: 1px solid var(--neon); color: white; padding: 8px; }
+        :root {
+            --neon-green: #00ff41;
+            --bg-black: #0d0d0d;
+        }
+        body {
+            background-color: var(--bg-black);
+            color: var(--neon-green);
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            width: 800px;
+            border: 1px solid var(--neon-green);
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+        }
+        h1 { text-transform: uppercase; border-bottom: 1px solid var(--neon-green); padding-bottom: 10px; }
+        .terminal-output { height: 300px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #333; padding: 10px; }
+        .input-area { display: flex; gap: 10px; }
+        input { background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); flex-grow: 1; padding: 5px; }
+        button { background: var(--neon-green); color: black; border: none; cursor: pointer; font-weight: bold; padding: 5px 15px; }
+        button:hover { background: #00cc33; }
+        .alert { color: #ff3333; font-weight: bold; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
 
-<h1 class="glitch">CYBER SENTINEL OS</h1>
-<div id="terminal">
-    > WELCOME TO THE SECURITY LAB<br>
-    > SYSTEM: AI-DEFENSE MODULE ONLINE.<br>
-</div>
-
-<div class="module-grid">
-    <button onclick="log('AI-SEC: 辨識深度偽造(Deepfake)關鍵在於觀察邊緣模糊與不自然的眨眼頻率。')">AI Security</button>
-    <button onclick="log('DEFEND: 永遠開啟 MFA，使用 FIDO2 金鑰是最高級防禦。')">Defense 101</button>
-</div>
-
-<div class="input-line">
-    <input type="text" id="cmd" placeholder="Execute command..." onkeydown="process(event)">
+<div class="container">
+    <h1>[ CYBER-SEC SANDBOX ]</h1>
+    <div id="terminal" class="terminal-output">
+        <p>> System Initialized...</p>
+        <p>> Awaiting Command. Type 'scan' or 'verify'.</p>
+    </div>
+    
+    <div class="input-area">
+        <input type="text" id="cmd" placeholder="Enter command..." autofocus>
+        <button onclick="processCommand()">EXECUTE</button>
+    </div>
 </div>
 
 <script>
-    const term = document.getElementById('terminal');
-    function log(msg) { term.innerHTML += `<br>> ${msg}`; term.scrollTop = term.scrollHeight; }
-    
-    function process(e) {
-        if (e.key === 'Enter') {
-            const cmd = document.getElementById('cmd').value;
-            log(cmd);
-            if(cmd.includes('simulate')) {
-                log("⚠️ 啟動中間人攻擊(MITM)模擬...", "var(--danger)");
-                if(navigator.vibrate) navigator.vibrate(800);
-            }
-            document.getElementById('cmd').value = '';
+    const terminal = document.getElementById('terminal');
+    const cmdInput = document.getElementById('cmd');
+
+    function processCommand() {
+        const cmd = cmdInput.value.toLowerCase();
+        const line = document.createElement('p');
+        line.innerHTML = `> ${cmd}`;
+        terminal.appendChild(line);
+
+        if (cmd === 'scan') {
+            const res = document.createElement('p');
+            res.innerHTML = ">> Scanning network... Vulnerability found in PORT 8080 (SQL Injection).";
+            terminal.appendChild(res);
+        } else if (cmd === 'verify') {
+            const alert = document.createElement('p');
+            alert.className = 'alert';
+            alert.innerHTML = "!! SECURITY ALERT: UNAUTHORIZED ACCESS DETECTED IN LOGS !!";
+            terminal.appendChild(alert);
+        } else {
+            terminal.innerHTML += "<p>> Unknown Command.</p>";
         }
+        cmdInput.value = '';
+        terminal.scrollTop = terminal.scrollHeight;
     }
 </script>
 </body>
