@@ -1,79 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Open World Prototype</title>
+    <title>Web Theft Auto</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #222; }
-        canvas { display: block; }
+        body { margin: 0; background: #2c3e50; color: white; font-family: sans-serif; }
+        canvas { display: block; background: #34495e; }
+        #ui { position: absolute; top: 10px; left: 10px; }
     </style>
 </head>
 <body>
-<canvas id="gameCanvas"></canvas>
+    <div id="ui">Controls: WASD to Move | Space to Enter/Exit Vehicle</div>
+    <canvas id="gameCanvas"></canvas>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    // Resize canvas
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
+    let player = { x: 100, y: 100, inVehicle: false, speed: 4 };
+    let car = { x: 300, y: 300, active: false, speed: 8 };
+    let keys = {};
 
-    // Game state
-    const worldSize = 2000; // Large world
-    const player = { x: 100, y: 100, size: 30, speed: 5 };
-    const camera = { x: 0, y: 0 };
-
-    // Simple Input Handling
-    const keys = {};
-    window.addEventListener('keydown', (e) => keys[e.code] = true);
-    window.addEventListener('keyup', (e) => keys[e.code] = false);
+    window.addEventListener('keydown', e => keys[e.code] = true);
+    window.addEventListener('keyup', e => keys[e.code] = false);
 
     function update() {
-        // Move Player
-        if (keys['ArrowUp'] || keys['KeyW']) player.y -= player.speed;
-        if (keys['ArrowDown'] || keys['KeyS']) player.y += player.speed;
-        if (keys['ArrowLeft'] || keys['KeyA']) player.x -= player.speed;
-        if (keys['ArrowRight'] || keys['KeyD']) player.x += player.speed;
+        // Toggle Vehicle
+        if (keys['Space']) {
+            if (!player.inVehicle && Math.hypot(player.x - car.x, player.y - car.y) < 50) player.inVehicle = true;
+            else player.inVehicle = false;
+        }
 
-        // Keep player in bounds
-        player.x = Math.max(0, Math.min(worldSize - player.size, player.x));
-        player.y = Math.max(0, Math.min(worldSize - player.size, player.y));
+        let mover = player.inVehicle ? car : player;
+        let currentSpeed = player.inVehicle ? car.speed : player.speed;
 
-        // Update Camera to follow player
-        camera.x = player.x - canvas.width / 2;
-        camera.y = player.y - canvas.height / 2;
+        if (keys['KeyW']) mover.y -= currentSpeed;
+        if (keys['KeyS']) mover.y += currentSpeed;
+        if (keys['KeyA']) mover.x -= currentSpeed;
+        if (keys['KeyD']) mover.x += currentSpeed;
     }
 
     function draw() {
-        ctx.fillStyle = '#333';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw World (Represented as a grid)
-        ctx.strokeStyle = '#555';
-        for (let i = 0; i <= worldSize; i += 100) {
-            ctx.beginPath();
-            ctx.moveTo(i - camera.x, 0 - camera.y);
-            ctx.lineTo(i - camera.x, worldSize - camera.y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(0 - camera.x, i - camera.y);
-            ctx.lineTo(worldSize - camera.x, i - camera.y);
-            ctx.stroke();
-        }
+        // Draw Car
+        ctx.fillStyle = player.inVehicle ? '#e74c3c' : '#bdc3c7';
+        ctx.fillRect(car.x, car.y, 60, 30);
 
         // Draw Player
-        ctx.fillStyle = '#00FF00';
-        ctx.fillRect(player.x - camera.x, player.y - camera.y, player.size, player.size);
+        if (!player.inVehicle) {
+            ctx.fillStyle = '#f1c40f';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, 15, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
-        requestAnimationFrame(() => { update(); draw(); });
+        update();
+        requestAnimationFrame(draw);
     }
-
     draw();
 </script>
 </body>
