@@ -1,69 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Open World Prototype</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f9f9f9; margin: 0; }
-        .container { display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 320px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #cc0000; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        
-        /* Dashboard Styles */
-        #dashboard { padding: 20px; display: none; }
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .video-card { background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .thumbnail { width: 100%; height: 140px; background: #ddd; border-radius: 4px; margin-bottom: 10px; }
+        body { margin: 0; overflow: hidden; background: #222; }
+        canvas { display: block; }
     </style>
 </head>
 <body>
-
-<div id="app">
-    <div id="loginView" class="container">
-        <div class="card">
-            <h2>Sign In</h2>
-            <input type="text" id="user" placeholder="Username">
-            <input type="password" id="pass" placeholder="Password">
-            <button onclick="login()">Log In</button>
-        </div>
-    </div>
-
-    <div id="dashboard">
-        <h1>Recommended</h1>
-        <div class="video-grid" id="videoGrid"></div>
-        <button onclick="logout()" style="width: 100px; margin-top: 20px;">Logout</button>
-    </div>
-</div>
+<canvas id="gameCanvas"></canvas>
 
 <script>
-    // 1. Check for existing session
-    if (localStorage.getItem('isLoggedIn') === 'true') showDashboard();
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
 
-    function login() {
-        // Simple mock validation
-        if (document.getElementById('user').value !== "") {
-            localStorage.setItem('isLoggedIn', 'true');
-            showDashboard();
-        } else {
-            alert("Please enter a username");
+    // Resize canvas
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Game state
+    const worldSize = 2000; // Large world
+    const player = { x: 100, y: 100, size: 30, speed: 5 };
+    const camera = { x: 0, y: 0 };
+
+    // Simple Input Handling
+    const keys = {};
+    window.addEventListener('keydown', (e) => keys[e.code] = true);
+    window.addEventListener('keyup', (e) => keys[e.code] = false);
+
+    function update() {
+        // Move Player
+        if (keys['ArrowUp'] || keys['KeyW']) player.y -= player.speed;
+        if (keys['ArrowDown'] || keys['KeyS']) player.y += player.speed;
+        if (keys['ArrowLeft'] || keys['KeyA']) player.x -= player.speed;
+        if (keys['ArrowRight'] || keys['KeyD']) player.x += player.speed;
+
+        // Keep player in bounds
+        player.x = Math.max(0, Math.min(worldSize - player.size, player.x));
+        player.y = Math.max(0, Math.min(worldSize - player.size, player.y));
+
+        // Update Camera to follow player
+        camera.x = player.x - canvas.width / 2;
+        camera.y = player.y - canvas.height / 2;
+    }
+
+    function draw() {
+        ctx.fillStyle = '#333';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw World (Represented as a grid)
+        ctx.strokeStyle = '#555';
+        for (let i = 0; i <= worldSize; i += 100) {
+            ctx.beginPath();
+            ctx.moveTo(i - camera.x, 0 - camera.y);
+            ctx.lineTo(i - camera.x, worldSize - camera.y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0 - camera.x, i - camera.y);
+            ctx.lineTo(worldSize - camera.x, i - camera.y);
+            ctx.stroke();
         }
+
+        // Draw Player
+        ctx.fillStyle = '#00FF00';
+        ctx.fillRect(player.x - camera.x, player.y - camera.y, player.size, player.size);
+
+        requestAnimationFrame(() => { update(); draw(); });
     }
 
-    function showDashboard() {
-        document.getElementById('loginView').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-        
-        // Generate mock videos
-        const grid = document.getElementById('videoGrid');
-        for(let i=0; i<6; i++) {
-            grid.innerHTML += `<div class="video-card"><div class="thumbnail"></div><h4>Video Title ${i+1}</h4></div>`;
-        }
-    }
-
-    function logout() {
-        localStorage.removeItem('isLoggedIn');
-        location.reload();
-    }
+    draw();
 </script>
-
 </body>
 </html>
