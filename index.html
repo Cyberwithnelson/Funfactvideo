@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Sentinel 互動沙盒</title>
+    <style>
+        :root { --green: #39ff14; --red: #ff3131; --bg: #0a0a0a; }
+        body { background-color: var(--bg); color: var(--green); font-family: 'Courier New', Courier, monospace; padding: 20px; margin: 0; }
+        
+        h1 { text-align: center; border-bottom: 1px solid var(--green); padding-bottom: 10px; }
+        .card { background: #161616; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px; }
+        
+        button { width: 100%; padding: 12px; margin: 5px 0; background: transparent; border: 1px solid var(--green); color: var(--green); cursor: pointer; text-transform: uppercase; }
+        button:active { background: var(--green); color: black; }
+        
+        .danger { border-color: var(--red); color: var(--red); }
+        .danger:active { background: var(--red); color: black; }
+        
+        #terminal { background: black; padding: 10px; height: 120px; overflow-y: scroll; border: 1px solid #333; font-size: 12px; }
+        #alert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; justify-content: center; align-items: center; color: var(--red); }
+    </style>
+</head>
+<body>
+
+<h1>CYBER SENTINEL</h1>
+
+<div class="card">
+    <h3>[沙盒] 釣魚郵件測試</h3>
+    <p>收到銀行郵件要求「緊急更新密碼」：</p>
+    <button class="danger" onclick="attacked()">點擊連結</button>
+    <button onclick="log('✅ 安全：已查驗發件地址，確實為釣魚郵件。')">識別並刪除</button>
+</div>
+
+<div class="card">
+    <h3>[AI Security] 語音偽造</h3>
+    <p>收到 AI 模擬親友聲音要求匯款：</p>
+    <button onclick="log('✅ 安全：已通過密語驗證，確認為 AI 詐騙。')">核對密語</button>
+    <button class="danger" onclick="attacked()">直接轉帳</button>
+</div>
+
+<div id="terminal">System Initialized... Waiting for input...</div>
+
+<div id="alert-overlay" onclick="this.style.display='none'">
+    <h1>🚨 入侵成功 🚨</h1>
+    <p>你的資料已外洩！</p>
+</div>
+
+<script>
+    const term = document.getElementById('terminal');
+    const overlay = document.getElementById('alert-overlay');
+
+    function log(msg) {
+        term.innerHTML += "<br>> " + msg;
+        term.scrollTop = term.scrollHeight;
+    }
+
+    function attacked() {
+        if (navigator.vibrate) navigator.vibrate(500);
+        overlay.style.display = 'flex';
+        log("❌ 警告：受到惡意程式碼注入！");
+    }
+</script>
+</body>
+</html>
