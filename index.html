@@ -3,72 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Sentinel | Security Lab</title>
+    <title>Cyber Sentinel | Advanced Security Lab</title>
     <style>
-        :root { --neon: #00ff41; --danger: #ff003c; --bg: #050505; }
-        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; padding: 15px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        :root { --neon: #00f3ff; --danger: #ff0055; --bg: #09090b; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Orbitron', sans-serif; margin: 0; padding: 15px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        h1 { font-size: 1.2rem; text-align: center; border: 1px solid var(--neon); padding: 5px; text-transform: uppercase; }
-        
-        /* 終端機區域 */
-        #terminal { flex-grow: 1; background: #000; border: 1px solid #333; padding: 15px; overflow-y: auto; font-size: 0.9rem; margin-bottom: 10px; box-shadow: inset 0 0 10px rgba(0,255,65,0.1); }
-        
-        /* 輸入與按鈕區 */
-        .controls { display: flex; flex-direction: column; gap: 10px; }
-        input { background: #111; border: 1px solid var(--neon); color: var(--neon); padding: 12px; width: 100%; box-sizing: border-box; }
-        button { background: transparent; border: 1px solid var(--neon); color: var(--neon); padding: 12px; cursor: pointer; text-transform: uppercase; }
-        button.danger { border-color: var(--danger); color: var(--danger); }
-        button:active { background: var(--neon); color: black; }
-        button.danger:active { background: var(--danger); color: white; }
+        .glitch { position: relative; text-shadow: 0.05em 0 0 var(--danger), -0.05em -0.025em 0 var(--neon); animation: glitch 725ms infinite; }
+        @keyframes glitch { 0% { text-shadow: 0.05em 0 0 var(--danger), -0.05em -0.025em 0 var(--neon); } 14% { text-shadow: 0.05em 0 0 var(--danger), -0.05em -0.025em 0 var(--neon); } 15% { text-shadow: -0.05em -0.025em 0 var(--danger), 0.025em 0.025em 0 var(--neon); } 100% { text-shadow: -0.05em -0.025em 0 var(--danger), 0.025em 0.025em 0 var(--neon); } }
 
-        /* 入侵效果 */
-        #glitch-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,0,60,0.2); pointer-events: none; z-index: 10; }
+        #terminal { flex-grow: 1; border: 1px solid #333; padding: 15px; background: rgba(0,0,0,0.8); overflow-y: auto; font-size: 0.85rem; border-radius: 4px; }
+        .module-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        button { background: transparent; border: 1px solid var(--neon); color: var(--neon); padding: 10px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: var(--neon); color: black; }
+        .input-line { display: flex; margin-top: 10px; }
+        input { flex-grow: 1; background: transparent; border: 1px solid var(--neon); color: white; padding: 8px; }
     </style>
 </head>
 <body>
 
-<h1>Cyber Sentinel: Security Lab</h1>
-<div id="terminal">System: Ready. Type 'help' to start.<br>> </div>
-
-<div class="controls">
-    <input type="text" id="cmd" placeholder="root@sentinel:~#" onkeydown="process(event)">
-    <button onclick="runAttack()">模擬：勒索軟件攻擊</button>
+<h1 class="glitch">CYBER SENTINEL OS</h1>
+<div id="terminal">
+    > WELCOME TO THE SECURITY LAB<br>
+    > SYSTEM: AI-DEFENSE MODULE ONLINE.<br>
 </div>
 
-<div id="glitch-overlay"></div>
+<div class="module-grid">
+    <button onclick="log('AI-SEC: 辨識深度偽造(Deepfake)關鍵在於觀察邊緣模糊與不自然的眨眼頻率。')">AI Security</button>
+    <button onclick="log('DEFEND: 永遠開啟 MFA，使用 FIDO2 金鑰是最高級防禦。')">Defense 101</button>
+</div>
+
+<div class="input-line">
+    <input type="text" id="cmd" placeholder="Execute command..." onkeydown="process(event)">
+</div>
 
 <script>
     const term = document.getElementById('terminal');
-    const input = document.getElementById('cmd');
-    const overlay = document.getElementById('glitch-overlay');
-
-    function log(msg, color = 'var(--neon)') {
-        term.innerHTML += `<div style="color:${color}">> ${msg}</div>`;
-        term.scrollTop = term.scrollHeight;
-    }
-
+    function log(msg) { term.innerHTML += `<br>> ${msg}`; term.scrollTop = term.scrollHeight; }
+    
     function process(e) {
         if (e.key === 'Enter') {
-            const val = input.value.trim().toLowerCase();
-            log(val);
-            input.value = '';
-            
-            if (val === 'help') log("可用指令: [scan] 掃描漏洞, [patch] 修復, [clear] 清空");
-            else if (val === 'scan') log("掃描中... 發現 2 個 SQL 注入風險！");
-            else if (val === 'patch') log("正在修復... 漏洞已封鎖。", "#00ff41");
-            else if (val === 'clear') term.innerHTML = "";
-            else log("未知指令: " + val, "var(--danger)");
+            const cmd = document.getElementById('cmd').value;
+            log(cmd);
+            if(cmd.includes('simulate')) {
+                log("⚠️ 啟動中間人攻擊(MITM)模擬...", "var(--danger)");
+                if(navigator.vibrate) navigator.vibrate(800);
+            }
+            document.getElementById('cmd').value = '';
         }
-    }
-
-    function runAttack() {
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
-        overlay.style.display = 'block';
-        log("警告：檔案系統正在被加密...", "var(--danger)");
-        setTimeout(() => {
-            overlay.style.display = 'none';
-            log("攻擊結束：模擬系統已恢復。", "white");
-        }, 3000);
     }
 </script>
 </body>
