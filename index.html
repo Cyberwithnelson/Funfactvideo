@@ -2,70 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER_CORE // SECURE_OPERATIONS</title>
     <style>
         :root { --neon: #00ff41; --bg: #050505; }
-        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; padding: 20px; }
-        .dashboard { max-width: 1200px; margin: auto; }
-        
-        .terminal { background: #000; border: 1px solid var(--neon); padding: 15px; height: 250px; overflow-y: auto; margin-bottom: 20px; border-radius: 4px; box-shadow: 0 0 10px rgba(0,255,65,0.2); }
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        
-        .module { border: 1px solid var(--neon); padding: 20px; cursor: pointer; transition: 0.3s; }
-        .module:hover { background: rgba(0,255,65,0.1); box-shadow: 0 0 15px var(--neon); }
-        
-        .content { display: none; margin-top: 15px; color: #fff; border-top: 1px solid var(--neon); padding-top: 10px; }
-        
-        .controls { margin-top: 20px; text-align: center; }
-        button { background: transparent; color: var(--neon); border: 1px solid var(--neon); padding: 12px 24px; cursor: pointer; font-family: inherit; }
-        button:hover { background: var(--neon); color: #000; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; }
+        .page { display: none; padding: 40px; text-align: center; height: 80vh; }
+        .active { display: block; }
+        #loading-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .terminal { background: #000; border: 1px solid var(--neon); width: 80%; height: 200px; padding: 20px; overflow-y: auto; text-align: left; }
+        button { background: transparent; color: var(--neon); border: 1px solid var(--neon); padding: 10px 20px; cursor: pointer; margin: 10px; }
     </style>
 </head>
 <body>
 
-<div class="dashboard">
-    <h1>[ CYBER_SECURITY_CORE ]</h1>
-    <div id="term" class="terminal">> System initialized... Awaiting directive.</div>
+<!-- 1. LOADING PAGE -->
+<div id="load" class="page active">
+    <h1>INITIALIZING SYSTEM...</h1>
+    <progress id="prog" value="0" max="100"></progress>
+</div>
 
-    <div class="grid">
-        <div class="module" onclick="toggle('m1')">
-            <h3>PHISHING_PROTECTION</h3>
-            <div id="m1" class="content">Educate students: Verify URL origins, check for sender spoofing, and enable MFA (Multi-Factor Authentication).</div>
-        </div>
-        <div class="module" onclick="toggle('m2')">
-            <h3>NETWORK_HARDENING</h3>
-            <div id="m2" class="content">Prevent unauthorized access: Use segmented networks, WPA3 encryption, and strictly manage guest access points.</div>
-        </div>
-        <div class="module" onclick="toggle('m3')">
-            <h3>DATA_ENCRYPTION</h3>
-            <div id="m3" class="content">Protect intellectual property: Ensure all sensitive student records are encrypted at rest (AES-256) and in transit (TLS 1.3).</div>
-        </div>
-    </div>
+<!-- 2. MAIN DASHBOARD -->
+<div id="main" class="page">
+    <h1>CYBER_CORE // COMMAND</h1>
+    <button onclick="show('intro')">INTRO</button>
+    <button onclick="show('attack')">SIMULATE ATTACK</button>
+    <button onclick="show('about')">ABOUT US</button>
+</div>
 
-    <div class="controls">
-        <button onclick="simulateScan()">RUN_SECURITY_DIAGNOSTIC</button>
-    </div>
+<!-- 3. INTRO PAGE -->
+<div id="intro" class="page">
+    <h2>CYBERSECURITY ESSENTIALS</h2>
+    <p>Understanding the digital landscape is vital for every student and educator.</p>
+    <button onclick="show('main')">BACK</button>
+</div>
+
+<!-- 4. ATTACK SIMULATION -->
+<div id="attack" class="page">
+    <h2>THREAT_SIMULATOR</h2>
+    <div id="term" class="terminal">> Waiting for input...</div>
+    <button onclick="runAttack()">EXECUTE SCAN</button>
+    <button onclick="show('main')">BACK</button>
+</div>
+
+<!-- 5. ABOUT US -->
+<div id="about" class="page">
+    <h2>ABOUT_PROJECT</h2>
+    <p>A mission to secure the classroom of tomorrow.</p>
+    <button onclick="show('main')">BACK</button>
 </div>
 
 <script>
-    function toggle(id) {
-        const el = document.getElementById(id);
-        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    // Navigation Logic
+    function show(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
     }
 
-    function simulateScan() {
-        const term = document.getElementById('term');
-        const threats = ["Patching required on Node_04", "Firewall rules optimized", "Intrusion detected: Blocked", "System Integrity: 99.8%"];
-        const random = threats[Math.floor(Math.random() * threats.length)];
-        
-        const line = document.createElement('div');
-        line.innerText = "> DIAGNOSTIC: " + random;
-        term.appendChild(line);
-        term.scrollTop = term.scrollHeight;
+    // Loading Animation
+    let v = 0;
+    const interval = setInterval(() => {
+        v += 10;
+        document.getElementById('prog').value = v;
+        if(v >= 100) { clearInterval(interval); show('main'); }
+    }, 300);
+
+    // Simulation Logic
+    function runAttack() {
+        const t = document.getElementById('term');
+        t.innerHTML += "<br>> Scanning... [SQL_INJECTION: DETECTED]";
     }
 </script>
-
 </body>
 </html>
