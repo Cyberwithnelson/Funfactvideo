@@ -3,74 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>泰拳課堂預約</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>個人斷食追蹤器</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        select, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; font-size: 16px; }
+        button { background: #4a90e2; color: white; font-weight: bold; }
+        .timer-display { font-size: 2.5em; font-weight: bold; text-align: center; color: #2c3e50; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border-bottom: 1px solid #eee; padding: 10px; text-align: center; }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans pb-20">
+<body>
 
-    <!-- Header -->
-    <header class="bg-black text-white p-4 sticky top-0 z-10 shadow-lg">
-        <h1 class="text-xl font-bold">🥊 本週課表</h1>
-    </header>
-
-    <!-- Date Tabs -->
-    <div class="flex overflow-x-auto p-4 gap-2 bg-white shadow-sm">
-        <button class="px-4 py-2 bg-red-600 text-white rounded-full text-sm whitespace-nowrap">今日 05/30</button>
-        <button class="px-4 py-2 bg-gray-200 rounded-full text-sm whitespace-nowrap">明天 05/31</button>
-        <button class="px-4 py-2 bg-gray-200 rounded-full text-sm whitespace-nowrap">06/01</button>
+    <div class="card" id="setupSection">
+        <h2>開始新斷食</h2>
+        <select id="plan">
+            <option value="24">24 小時</option>
+            <option value="36">36 小時</option>
+            <option value="48">48 小時</option>
+            <option value="60">60 小時</option>
+            <option value="72">72 小時</option>
+        </select>
+        <button onclick="startFast()">開始斷食</button>
     </div>
 
-    <!-- Class List -->
-    <main class="p-4 space-y-4">
-        <!-- 課程卡片 1 -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-red-600">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h2 class="text-lg font-bold">泰拳基礎入門</h2>
-                    <p class="text-gray-500 text-sm flex items-center gap-1 mt-1">
-                        <i data-lucide="clock" class="w-4 h-4"></i> 19:00 - 20:30
-                    </p>
-                    <p class="text-gray-500 text-sm flex items-center gap-1">
-                        <i data-lucide="user" class="w-4 h-4"></i> 教練: 傑森 (Jason)
-                    </p>
-                </div>
-                <div class="text-right">
-                    <span class="text-red-600 font-bold block text-sm">剩餘 3 位</span>
-                </div>
-            </div>
-            <button class="w-full mt-4 bg-black text-white py-2 rounded-lg font-semibold active:bg-gray-800 transition">
-                立即預約
-            </button>
-        </div>
+    <div class="card" id="timerSection" style="display:none;">
+        <h2 id="timerTitle">斷食進行中...</h2>
+        <div class="timer-display" id="display">00:00:00</div>
+        <button style="background: #e74c3c;" onclick="stopFast()">結束/重置</button>
+    </div>
 
-        <!-- 課程卡片 2 -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-gray-400">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-400">進階對打實戰</h2>
-                    <p class="text-gray-400 text-sm flex items-center gap-1 mt-1">
-                        <i data-lucide="clock" class="w-4 h-4"></i> 20:45 - 22:00
-                    </p>
-                </div>
-                <span class="text-gray-400 text-sm">已額滿</span>
-            </div>
-            <button disabled class="w-full mt-4 bg-gray-200 text-gray-400 py-2 rounded-lg cursor-not-allowed">
-                候補名單
-            </button>
-        </div>
-    </main>
-
-    <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around p-3">
-        <button class="text-red-600 flex flex-col items-center"><i data-lucide="calendar"></i><span class="text-xs">課表</span></button>
-        <button class="text-gray-500 flex flex-col items-center"><i data-lucide="list"></i><span class="text-xs">我的預約</span></button>
-        <button class="text-gray-500 flex flex-col items-center"><i data-lucide="user"></i><span class="text-xs">會員</span></button>
-    </nav>
+    <div class="card">
+        <h2>歷史記錄</h2>
+        <table id="logTable">
+            <thead><tr><th>日期</th><th>時數</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <button style="background: #27ae60; margin-top: 20px;" onclick="exportCSV()">匯出 CSV</button>
+        <input type="file" id="importFile" accept=".csv" style="display:none" onchange="importCSV(event)">
+        <button style="background: #7f8c8d;" onclick="document.getElementById('importFile').click()">匯入 CSV</button>
+    </div>
 
     <script>
-        // 初始化 Lucide 圖示
-        lucide.createIcons();
+        let logs = JSON.parse(localStorage.getItem('fastingLogs')) || [];
+        let timerInterval;
+
+        function startFast() {
+            const startTime = new Date().getTime();
+            const targetHours = parseInt(document.getElementById('plan').value);
+            localStorage.setItem('fastingActive', JSON.stringify({ startTime, targetHours }));
+            location.reload();
+        }
+
+        function stopFast() {
+            const active = JSON.parse(localStorage.getItem('fastingActive'));
+            if (active) {
+                const date = new Date().toLocaleDateString();
+                logs.push({ date, hours: active.targetHours });
+                localStorage.setItem('fastingLogs', JSON.stringify(logs));
+                localStorage.removeItem('fastingActive');
+            }
+            location.reload();
+        }
+
+        function updateTimer() {
+            const active = JSON.parse(localStorage.getItem('fastingActive'));
+            if (!active) return;
+
+            document.getElementById('setupSection').style.display = 'none';
+            document.getElementById('timerSection').style.display = 'block';
+
+            timerInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const remaining = (active.startTime + active.targetHours * 3600000) - now;
+                
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('display').innerHTML = "已完成！";
+                } else {
+                    const h = Math.floor(remaining / 3600000);
+                    const m = Math.floor((remaining % 3600000) / 60000);
+                    const s = Math.floor((remaining % 60000) / 1000);
+                    document.getElementById('display').innerHTML = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                }
+            }, 1000);
+        }
+
+        function renderLogs() {
+            const tbody = document.querySelector('#logTable tbody');
+            tbody.innerHTML = logs.map(l => `<tr><td>${l.date}</td><td>${l.hours}h</td></tr>`).join('');
+        }
+
+        function exportCSV() {
+            const csv = '日期,時數\n' + logs.map(l => `${l.date},${l.hours}`).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'my_fasting_logs.csv';
+            a.click();
+        }
+
+        function importCSV(e) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const rows = e.target.result.split('\n').slice(1);
+                rows.forEach(r => {
+                    const [date, hours] = r.split(',');
+                    if (date && hours) logs.push({ date, hours });
+                });
+                localStorage.setItem('fastingLogs', JSON.stringify(logs));
+                renderLogs();
+            };
+            reader.readAsText(e.target.files[0]);
+        }
+
+        updateTimer();
+        renderLogs();
     </script>
 </body>
 </html>
