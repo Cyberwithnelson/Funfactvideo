@@ -2,124 +2,71 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>個人斷食追蹤器</title>
+    <title>斷食記錄器</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        select, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; font-size: 16px; }
-        button { background: #4a90e2; color: white; font-weight: bold; }
-        .timer-display { font-size: 2.5em; font-weight: bold; text-align: center; color: #2c3e50; margin: 20px 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border-bottom: 1px solid #eee; padding: 10px; text-align: center; }
+        body { font-family: sans-serif; max-width: 500px; margin: 20px auto; padding: 0 20px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; margin-top: 10px; }
+        #recordList { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
+        .record-item { background: #f9f9f9; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div class="card" id="setupSection">
-        <h2>開始新斷食</h2>
-        <select id="plan">
+    <h2>斷食記錄</h2>
+    <div class="input-group">
+        <label>開始體重 (kg)</label>
+        <input type="number" id="startWeight" step="0.1">
+    </div>
+    <div class="input-group">
+        <label>結束體重 (kg)</label>
+        <input type="number" id="endWeight" step="0.1">
+    </div>
+    <div class="input-group">
+        <label>斷食時長 (小時)</label>
+        <select id="hours">
+            <option value="16">16 小時</option>
             <option value="24">24 小時</option>
             <option value="36">36 小時</option>
             <option value="48">48 小時</option>
             <option value="60">60 小時</option>
             <option value="72">72 小時</option>
         </select>
-        <button onclick="startFast()">開始斷食</button>
     </div>
+    <button onclick="saveRecord()">儲存記錄</button>
 
-    <div class="card" id="timerSection" style="display:none;">
-        <h2 id="timerTitle">斷食進行中...</h2>
-        <div class="timer-display" id="display">00:00:00</div>
-        <button style="background: #e74c3c;" onclick="stopFast()">結束/重置</button>
-    </div>
-
-    <div class="card">
-        <h2>歷史記錄</h2>
-        <table id="logTable">
-            <thead><tr><th>日期</th><th>時數</th></tr></thead>
-            <tbody></tbody>
-        </table>
-        <button style="background: #27ae60; margin-top: 20px;" onclick="exportCSV()">匯出 CSV</button>
-        <input type="file" id="importFile" accept=".csv" style="display:none" onchange="importCSV(event)">
-        <button style="background: #7f8c8d;" onclick="document.getElementById('importFile').click()">匯入 CSV</button>
-    </div>
+    <h3>歷史記錄</h3>
+    <div id="recordList"></div>
 
     <script>
-        let logs = JSON.parse(localStorage.getItem('fastingLogs')) || [];
-        let timerInterval;
-
-        function startFast() {
-            const startTime = new Date().getTime();
-            const targetHours = parseInt(document.getElementById('plan').value);
-            localStorage.setItem('fastingActive', JSON.stringify({ startTime, targetHours }));
-            location.reload();
-        }
-
-        function stopFast() {
-            const active = JSON.parse(localStorage.getItem('fastingActive'));
-            if (active) {
-                const date = new Date().toLocaleDateString();
-                logs.push({ date, hours: active.targetHours });
-                localStorage.setItem('fastingLogs', JSON.stringify(logs));
-                localStorage.removeItem('fastingActive');
-            }
-            location.reload();
-        }
-
-        function updateTimer() {
-            const active = JSON.parse(localStorage.getItem('fastingActive'));
-            if (!active) return;
-
-            document.getElementById('setupSection').style.display = 'none';
-            document.getElementById('timerSection').style.display = 'block';
-
-            timerInterval = setInterval(() => {
-                const now = new Date().getTime();
-                const remaining = (active.startTime + active.targetHours * 3600000) - now;
-                
-                if (remaining <= 0) {
-                    clearInterval(timerInterval);
-                    document.getElementById('display').innerHTML = "已完成！";
-                } else {
-                    const h = Math.floor(remaining / 3600000);
-                    const m = Math.floor((remaining % 3600000) / 60000);
-                    const s = Math.floor((remaining % 60000) / 1000);
-                    document.getElementById('display').innerHTML = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                }
-            }, 1000);
-        }
-
-        function renderLogs() {
-            const tbody = document.querySelector('#logTable tbody');
-            tbody.innerHTML = logs.map(l => `<tr><td>${l.date}</td><td>${l.hours}h</td></tr>`).join('');
-        }
-
-        function exportCSV() {
-            const csv = '日期,時數\n' + logs.map(l => `${l.date},${l.hours}`).join('\n');
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'my_fasting_logs.csv';
-            a.click();
-        }
-
-        function importCSV(e) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const rows = e.target.result.split('\n').slice(1);
-                rows.forEach(r => {
-                    const [date, hours] = r.split(',');
-                    if (date && hours) logs.push({ date, hours });
-                });
-                localStorage.setItem('fastingLogs', JSON.stringify(logs));
-                renderLogs();
+        function saveRecord() {
+            const record = {
+                start: document.getElementById('startWeight').value,
+                end: document.getElementById('endWeight').value,
+                hours: document.getElementById('hours').value,
+                date: new Date().toLocaleDateString()
             };
-            reader.readAsText(e.target.files[0]);
+
+            let records = JSON.parse(localStorage.getItem('fastingRecords') || '[]');
+            records.push(record);
+            localStorage.setItem('fastingRecords', JSON.stringify(records));
+            loadRecords();
         }
 
-        updateTimer();
-        renderLogs();
+        function loadRecords() {
+            const list = document.getElementById('recordList');
+            const records = JSON.parse(localStorage.getItem('fastingRecords') || '[]');
+            list.innerHTML = records.map(r => `
+                <div class="record-item">
+                    <strong>${r.date}</strong>: ${r.hours}小時斷食<br>
+                    體重: ${r.start}kg → ${r.end}kg (變化: ${(r.end - r.start).toFixed(1)}kg)
+                </div>
+            `).join('');
+        }
+
+        loadRecords();
     </script>
 </body>
 </html>
